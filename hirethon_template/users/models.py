@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from hirethon_template.users.managers import UserManager
 
 
+
+
 class User(AbstractUser):
     """
     Default custom user model for hirethon-template.
@@ -19,7 +21,7 @@ class User(AbstractUser):
     last_name = None  # type: ignore
     email = EmailField(_("email address"), unique=True)
     username = None  # type: ignore
-
+    
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
