@@ -20,7 +20,8 @@ urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
-    path("users/", include("hirethon_template.users.urls", namespace="users")),
+    path("api/users/", include("hirethon_template.users.urls", namespace="users")),
+    path("api/organizations/", include("hirethon_template.organization.urls")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

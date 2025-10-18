@@ -1,43 +1,54 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from django.views.generic import DetailView, RedirectView, UpdateView
+from rest_framework import generics, status
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import RegsiterSerialization, LoginSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
-User = get_user_model()
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegsiterSerialization
+    permission_classes = [AllowAny]
+    authentication_classes = []  
+    
 
+class LoginView(APIView):
+    permission_classes = [AllowAny]
 
-class UserDetailView(LoginRequiredMixin, DetailView):
-    model = User
-    slug_field = "id"
-    slug_url_kwarg = "id"
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
+        user = authenticate(request, email=email, password=password)
 
-user_detail_view = UserDetailView.as_view()
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "email": user.email,
+                "name": user.name,
+            }, status=status.HTTP_200_OK)
 
-
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = User
-    fields = ["name"]
-    success_message = _("Information successfully updated")
-
-    def get_success_url(self):
-        assert self.request.user.is_authenticated  # for mypy to know that the user is authenticated
-        return self.request.user.get_absolute_url()
-
-    def get_object(self):
-        return self.request.user
-
-
-user_update_view = UserUpdateView.as_view()
-
-
-class UserRedirectView(LoginRequiredMixin, RedirectView):
-    permanent = False
-
-    def get_redirect_url(self):
-        return reverse("users:detail", kwargs={"pk": self.request.user.pk})
-
-
-user_redirect_view = UserRedirectView.as_view()
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+class RefreshTokenView(APIView):
+    
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get(refresh_token)  
+        
+        if not refresh_token:
+            return Response({"detail": "Refresh token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+            
+            new_refresh_token = str(refresh)
+            
+            return Response({"access": access_token, "refresh": new_refresh_token}, status=status.HTTP_200_OK)
+        
+        except:
+            return Response({"detail": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)   

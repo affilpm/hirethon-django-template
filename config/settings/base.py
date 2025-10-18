@@ -2,7 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-
+from datetime import timedelta
 import environ
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -75,6 +75,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
@@ -328,6 +329,16 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+SIMPLE_JWT = {
+    # Access token lifetime (default: 5 minutes)
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # e.g., 60 minutes
+
+    # Refresh token lifetime (default: 1 day)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # e.g., 7 days
+
+
+}
+
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
 
@@ -368,6 +379,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://staging.app.hirethon_template.com",
     "https://app.hirethon_template.com",
     "https://*.hirethon_template.com",
+    "http://localhost:5173",  
 ]
 
 CORS_ALLOW_CREDENTIALS = True
