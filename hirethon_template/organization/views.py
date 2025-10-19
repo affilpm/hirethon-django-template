@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
 from .models import Organization
-from .serializers import OrganizationSerializer, OrganizationListSerializer
-from .models import Membership, Role
+from .serializers import OrganizationSerializer, OrganizationListSerializer, NamespaceSerializer
+from .models import Membership, Role, Namespace
 
 class OrganizationCreateView(generics.CreateAPIView):
     queryset = Organization.objects.all()
@@ -33,3 +33,22 @@ class OrganizationListView(generics.ListAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context 
+    
+
+class NamespaceCreateView(generics.CreateAPIView):
+    queryset = Namespace.objects.all()
+    serializer_class = NamespaceSerializer
+    permission_classes = [permissions.IsAuthenticated]    
+    
+
+class NamespaceListView(generics.ListAPIView):
+    queryset = Namespace.objects.all()
+    serializer_class = NamespaceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        org_id = self.request.query_params.get('organization')
+        queryset = super().get_queryset()
+        if org_id:
+            queryset = queryset.filter(organization_id=org_id)
+        return queryset    

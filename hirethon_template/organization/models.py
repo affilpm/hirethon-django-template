@@ -32,11 +32,13 @@ class Membership(models.Model):
 
 
 class Namespace(models.Model):
-    name = models.CharField(max_length=100, unique=True)  
+    name = models.CharField(max_length=100)  
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='namespaces')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_namespaces')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    
+    class Meta:
+        unique_together = ('organization', 'name')  
     def __str__(self):
         return f"{self.organization.name} - {self.name}"
 
